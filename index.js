@@ -14,8 +14,21 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
 
+const eventsPath = path.join(__dirname, 'events');
 const commandsPath = path.join(__dirname, 'commands');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+//event handling
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 
 
 //add the commands to the Collenciton, only .js files in commands folder
@@ -30,22 +43,9 @@ for (const file of commandFiles) {
 	}
 }
 
-// When the client is ready, run this code (only once)
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
-client.once(Events.ClientReady, c => {
-	console.log(`Ready! Logged in as ${c.user.tag}`);
-});
-
-//console.log all interaction that happens
-client.on(Events.InteractionCreate, interaction => {
-	if (!interaction.isChatInputCommand()) return;
-	console.log(interaction);
-});
-
 //Command handling
 client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
-
 	const command = interaction.client.commands.get(interaction.commandName);
 
 	if (!command) {
