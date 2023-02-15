@@ -4,20 +4,27 @@ require("dotenv").config();
 // Require the necessary discord.js classes
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 
 //Setting up token
 const { token } = process.env.DISCORD_TOKEN;
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds,GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates] });
 
-client.commands = new Collection();
+//Player
+const { Player } = require("discord-music-player");
+const player = new Player(client, {
+    leaveOnEmpty: false, // This options are optional.
+	deafenOnJoin: true,
+	leaveOnStop: false,
+	leaveOnEnd: false
+});
+client.player = player
 
 const eventsPath = path.join(__dirname, 'events');
-const commandsPath = path.join(__dirname, 'commands');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 //event handling
 for (const file of eventFiles) {
@@ -30,6 +37,10 @@ for (const file of eventFiles) {
 	}
 }
 
+let commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+client.commands = new Collection();
 
 //add the commands to the Collenciton, only .js files in commands folder
 for (const file of commandFiles) {
@@ -42,6 +53,7 @@ for (const file of commandFiles) {
 		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 	}
 }
+
 
 //Command handling
 client.on(Events.InteractionCreate, async interaction => {
