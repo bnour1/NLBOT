@@ -52,4 +52,4 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-	await client.login(token);
+client.login(token);
