@@ -12,6 +12,10 @@ module.exports = {
 		return;
 	}
 
+	if(interaction.commandName == 'play'){
+		await interaction.deferReply();
+	}
+
 	try {
 		await command.execute(interaction);
 	} catch (error) {

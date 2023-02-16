@@ -11,14 +11,13 @@ module.exports = {
     async execute(interaction) {
         let queue = interaction.client.player.createQueue(interaction.guild.id);
         const args = interaction.options.getString('song').trim().split(/ +/g);;
-        await queue.join(interaction.member.voice.channel);
-        let song = await queue.play(args.join(' ')).catch(err => {
+         await queue.join(interaction.member.voice.channel);
+        let song =  await queue.play(args.join(' ')).catch(err => {
             console.log(err);
             if(!guildQueue)
                 queue.stop();
-        });
-
+        })
         let guildQueue = interaction.client.player.getQueue(interaction.guild.id);
-        await interaction.reply('Now playing: '+ guildQueue.nowPlaying);
+        await interaction.editReply("Now Playing: "+ guildQueue.nowPlaying);
       },
     };
