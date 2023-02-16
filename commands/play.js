@@ -18,6 +18,6 @@ module.exports = {
                 queue.stop();
         })
         let guildQueue = interaction.client.player.getQueue(interaction.guild.id);
-        await interaction.editReply("Now Playing: "+ guildQueue.nowPlaying);
+        await interaction.editReply("Reproduzido: "+ guildQueue.nowPlaying);
       },
     };
