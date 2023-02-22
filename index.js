@@ -11,7 +11,7 @@ const { Client, Events, GatewayIntentBits, Collection, ClientApplication } = req
 const { token } = process.env.DISCORD_TOKEN;
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates,], });
 
 //Player
 const { Player } = require("discord-music-player");
@@ -50,6 +50,7 @@ for (const file of eventFiles) {
 		client.once(event.name, (...args) => event.execute(...args));
 	} else {
 		client.on(event.name, (...args) => event.execute(...args));
+		client.player.on(event.name, (...args) => event.execute(...args));
 	}
 }
 client.login(token);

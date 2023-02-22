@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,13 +12,16 @@ module.exports = {
     async execute(interaction) {
         let queue = interaction.client.player.createQueue(interaction.guild.id);
         const args = interaction.options.getString('song').trim().split(/ +/g);;
+        queue.setData({
+            channel : interaction.channel,
+        });
+        await interaction.deferReply();
          await queue.join(interaction.member.voice.channel);
-        let song =  await queue.play(args.join(' ')).catch(err => {
+         await queue.play(args.join(' ')).catch(err => {
             console.log(err);
             if(!guildQueue)
                 queue.stop();
         })
-        let guildQueue = interaction.client.player.getQueue(interaction.guild.id);
-        await interaction.editReply("Reproduzido: "+ guildQueue.nowPlaying);
-      },
+        await interaction.deleteReply();
+    },
     };
