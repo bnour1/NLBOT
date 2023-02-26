@@ -1,27 +1,34 @@
 //setting up dotenv
 require("dotenv").config();
 
-// Require the necessary discord.js classes
-const fs = require('node:fs');
-const path = require('node:path');
+const {Client, GatewayIntentBits, Collection} = require('discord.js');
+const { Player } = require("discord-player");
 
-const { Client, Events, GatewayIntentBits, Collection, ClientApplication } = require('discord.js');
-
-//Setting up token
+//Setting up token from .env file
 const { token } = process.env.DISCORD_TOKEN;
 
-// Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates,], });
-
-//Player
-const { Player } = require("discord-music-player");
-const player = new Player(client, {
-	leaveOnEmpty: false, // This options are optional.
-	deafenOnJoin: true,
-	leaveOnStop: false,
-	leaveOnEnd: false
+// New client instance
+const client = new Client({
+	intents: [
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.GuildMessages,
+	GatewayIntentBits.GuildVoiceStates,],
 });
-client.player = player
+
+//Initiazing player instance
+const player = new Player(client, {
+	autoSelfDeaf: true,
+	disableBiquad: true,
+	disableEqualizer: true,
+	leaveOnEmpty: false,
+	leaveOnEnd: false,
+	leaveOnStop: false,
+})
+
+client.player = player;
+
+const fs = require('node:fs');
+const path = require('node:path');
 
 let commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -49,8 +56,8 @@ for (const file of eventFiles) {
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
 		client.player.on(event.name, (...args) => event.execute(...args));
+		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
 client.login(token);
