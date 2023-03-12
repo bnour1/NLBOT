@@ -1,6 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const playdl = require("play-dl");
-const ytdlcore = require("ytdl-core")
 const { Player } = require('discord-player');
 
 module.exports = {
@@ -12,34 +10,25 @@ module.exports = {
                 .setDescription('The refferal to the song')
                 .setRequired(true)),
     async execute(interaction) {
-        if (!interaction.member.voice.channelId) return await interaction.reply({ content: "You are not in a voice channel!", ephemeral: true });
-        if (interaction.guild.members.me.voice.channelId && interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId) return await interaction.reply({ content: "You are not in my voice channel!", ephemeral: true });
-        const query = interaction.options.getString("query");
-        const queue = interaction.client.player.createQueue(interaction.guild, {
-            metadata: {
-                channel: interaction.channel
-            },
-            async onBeforeCreateStream(track, source, _queue) {
-                    return (await playdl.stream(track.url, { discordPlayerCompatibility : true })).stream;
+        const channel = interaction.member.voice.channel;
+    if (!channel) return interaction.reply('You are not connected to a voice channel!'); // make sure we have a voice channel
+    const query = interaction.options.getString('query', true); // we need input/query to play
+ 
+    // let's defer the interaction as things can take time to process
+    await interaction.deferReply();
+ 
+    try {
+        const { track } = await Player.singleton().play(channel, query, {
+            nodeOptions: {
+                // nodeOptions are the options for guild node (aka your queue in simple word)
+                metadata: interaction // we can access this metadata object using queue.metadata later on
             }
         });
-        
-        // verify vc connection
-        try {
-            if (!queue.connection) await queue.connect(interaction.member.voice.channel);
-        } catch {
-            queue.destroy();
-            return await interaction.reply({ content: "Could not join your voice channel!", ephemeral: true });
-        }
-
-        await interaction.deferReply();
-        const track = await interaction.client.player.search(query, {
-            requestedBy: interaction.user
-        }).then(x => x.tracks[0]);
-        if (!track) return await interaction.followUp({ content: `❌ | Track **${query}** não encontrada`, ephemeral:true});
-
-        queue.play(track);
-
-        return await interaction.followUp({ content: `⏱️ | Adicionando **${track.title}** à playlist!`, ephemeral: true });
+ 
+        return interaction.followUp(`**${track.title}** enqueued!`);
+    } catch (e) {
+        // let's return error if something failed
+        return interaction.followUp(`Something went wrong: ${e}`);
+    }
     },
 };
