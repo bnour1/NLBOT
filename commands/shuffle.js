@@ -3,11 +3,11 @@ const { Player } = require('discord-player');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('clear')
-        .setDescription('Limpa a playlist'),
+        .setName('shuffle')
+        .setDescription('randomiza a ordem na playlist'),
     async execute(interaction) {
         const queue = Player.singleton().nodes.get(interaction.guild.id);
-        queue.tracks.clear();
-        return await interaction.reply({ content: "Playlist Limpa", ephemeral: true });
+        queue.tracks.shuffle();
+        return await interaction.reply({ content: "Ordem randomizada", ephemeral: true });
     },
 };

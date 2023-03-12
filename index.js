@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const {Client, GatewayIntentBits, Collection} = require('discord.js');
-const { Player } = require("discord-player");
+const {Player} = require('discord-player');
 
 //Setting up token from .env file
 const { token } = process.env.DISCORD_TOKEN;
@@ -16,16 +16,7 @@ const client = new Client({
 });
 
 //Initiazing player instance
-const player = new Player(client, {
-	autoSelfDeaf: true,
-	disableBiquad: true,
-	disableEqualizer: true,
-	leaveOnEmpty: false,
-	leaveOnEnd: false,
-	leaveOnStop: false,
-})
-
-client.player = player;
+const player = Player.singleton(client);
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -56,7 +47,7 @@ for (const file of eventFiles) {
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
 	} else {
-		client.player.on(event.name, (...args) => event.execute(...args));
+		player.events.on(event.name, async (...args) => await event.execute(...args));
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
